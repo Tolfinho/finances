@@ -38,7 +38,11 @@ function App() {
       <BrowserRouter>
         <AuthProvider value={{ user }}>
           <Routes>
-            <Route exact path="/" element={<Home />} />
+            <Route
+              exact
+              path="/"
+              element={user ? <Home /> : <Navigate to="/login" />}
+            />
             <Route
               exact
               path="/login"

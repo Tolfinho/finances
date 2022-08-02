@@ -1,17 +1,40 @@
 // Icons
 import { VscChromeClose } from 'react-icons/vsc';
 
+// Hooks
 import { useState } from 'react';
+import { useInsertDocument } from '../hooks/useInsertDocument';
+import { useAuthValue } from '../context/authContext';
+
+// Router
+import { useNavigate } from 'react-router-dom';
 
 const CreateTransactionModal = ({ sexo }) => {
   const [value, setValue] = useState('');
   const [type, setType] = useState('');
   const [description, setDescription] = useState('');
+  const navigate = useNavigate();
+
+  const { user } = useAuthValue();
+
+  const { insertDocument, error, loading } = useInsertDocument('transactions');
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log('form enviado');
+    const transaction = {
+      uid: user.uid,
+      value,
+      type,
+      description,
+    };
+
+    insertDocument(transaction);
+
+    // Close modal
+    sexo(false);
+
+    navigate('/');
   };
 
   return (
@@ -54,7 +77,8 @@ const CreateTransactionModal = ({ sexo }) => {
               required
             />
           </label>
-          <button>Enviar</button>
+          <button>{(!loading && 'Enviar') || 'Aguarde...'}</button>
+          {error && <p className="errorMessage">{error}</p>}
         </form>
       </div>
     </div>
