@@ -1,23 +1,57 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
+
+// Components
+import Footer from './layout/Footer';
+import Navbar from './layout/Navbar';
+
+// Pages
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+
+// Context
+import { AuthProvider } from './context/authContext';
+
+// Hooks
+import { useState, useEffect } from 'react';
+import { useAuthentication } from './hooks/useAuthentication';
 
 function App() {
+  const [user, setUser] = useState(undefined);
+  const { auth } = useAuthentication();
+
+  const loadingUser = user === undefined;
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
+  }, [auth]);
+
+  if (loadingUser) {
+    return <p>Carregando...</p>;
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <BrowserRouter>
+        <AuthProvider value={{ user }}>
+          <Routes>
+            <Route exact path="/" element={<Home />} />
+            <Route
+              exact
+              path="/login"
+              element={!user ? <Login /> : <Navigate to="/" />}
+            />
+            <Route
+              exact
+              path="/signup"
+              element={!user ? <Signup /> : <Navigate to="/" />}
+            />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
     </div>
   );
 }
